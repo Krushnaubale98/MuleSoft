@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="AccountantFlow" doc:id="becdfb9e-3a0c-473e-9d43-8d82e818587c" >
+		<http:listener doc:name="Listener" doc:id="cefe5bfe-460b-4b7a-af09-3b43a631b321" config-ref="HTTP_Listener_config" path="/Allaccountants" allowedMethods="GET"/>
+		<db:select doc:name="Select" doc:id="615b67bd-e732-423a-b26b-9e04f4b06787" config-ref="Database_Config1">
+			<db:sql ><![CDATA[SELECT * FROM accountant]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="7801c3ed-d746-4cc6-821d-4010739d22ca" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="AccountantFlow1" doc:id="44144788-044b-48b9-aa1a-881b4fe558ee" >
+		<http:listener doc:name="Listener" doc:id="5945196d-fd32-4e13-b2a4-e80138934f55" config-ref="HTTP_Listener_config" path="/accountant"/>
+		<db:select doc:name="Select" doc:id="934248c8-87c3-4a70-9b52-bfa522c4ccc1" config-ref="Database_Config1">
+			<db:sql ><![CDATA[Select * from accountant where name=:Name]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	'Name':attributes.queryParams.name
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="9e5b958c-75ce-4fdb-81b6-cc2adf2047aa" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="AccountantFlow2" doc:id="8191556c-fce1-4527-a23c-d936f3ef7bb7" >
+		<http:listener doc:name="Listener" doc:id="285c668e-151d-480f-a9dc-b36da1e2a25a" config-ref="HTTP_Listener_config" path="/accountant" allowedMethods="POST"/>
+		<db:insert doc:name="Insert" doc:id="81422d04-d375-4092-88cd-86ee5c9ec492" config-ref="Database_Config1">
+			<db:sql ><![CDATA[insert into accountant (Name,Password,Email,Contact)values(:name,:password,:email,:contact);]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	name: payload.name,
+	password: payload.password,
+	email: payload.email,
+	contact: payload.contact
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="5a225f82-04c0-434e-bf46-16f3db514630" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="AccountantFlow3" doc:id="3bb920ae-0ff8-4118-b592-420688084f15" >
+		<http:listener doc:name="Listener" doc:id="bfc4afdc-f51a-4948-bfed-8814e0d56b31" config-ref="HTTP_Listener_config" path="/accountant" allowedMethods="Update"/>
+		<db:update doc:name="Update" doc:id="0e909c06-cbdb-4cde-b3ff-d2a5aea9d4bd" config-ref="Database_Config1">
+			<db:sql ><![CDATA[Update accountant set Password=:password,Email=:email,Contact=:contact where Name=:name]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	name:payload.name,
+	password:payload.password,
+	email:payload.email,
+	contact:payload.contact
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="5fbcbf1c-e5ce-4aef-b225-c045ac28dc06" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="AccountantFlow4" doc:id="0cd6c1e2-6e4f-4aef-a204-45acd147a89e" >
+		<http:listener doc:name="Listener" doc:id="831cd4fd-3b10-4dc4-854d-3f6137cc54ad" config-ref="HTTP_Listener_config" path="/accountant/{name}" allowedMethods="Delete"/>
+		<db:delete doc:name="Delete" doc:id="c8aeac26-5f46-4752-a2f9-2467bd46a9f4" config-ref="Database_Config1">
+			<db:sql ><![CDATA[Delete from accountant where Name=:name]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id:attributes.uriParams.name
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="e5382857-7ba2-4a61-9798-a10602c79d39" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
