@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="929f8931-b1ed-4ab6-9b61-3350705123f3" >
+		<http:request-connection host="localhost" port="8082" />
+	</http:request-config>
+	<flow name="helloFlow" doc:id="25f85f37-fa88-456c-a1b5-267ec2b40499" >
+		<http:listener doc:name="Get/Hello" doc:id="5aef41ef-965c-4686-bdd6-2ab8cfc68dab" path="/hello" allowedMethods="GET" config-ref="HTTP_Listener_config">
+			<http:response reasonPhrase="Success" statusCode="200">
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"name" : attributes.queryParams.fname
+}]]]></http:headers>
+			</http:response>
+		</http:listener>
+		<set-payload value="Hello" doc:name="Hello" doc:id="8dcdff0b-de9d-45b6-97da-55bbb6d28388" />
+		<http:request method="GET" doc:name="GET/goodbye" doc:id="ecf1ff4e-a6cb-4808-80d0-eb706cd7f4c6" path="/goodbye" config-ref="HTTP_Request_configuration">
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"fullName" : attributes.queryParams.fname
+}]]]></http:query-params>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="7524c04f-10cb-47b2-b879-19c62d583b50" message="#['\nMessage:'  ++  payload]"/>
+	</flow>
+	<flow name="goodByFlow" doc:id="5eb8f135-1912-459f-8c75-bb6550e5b57f" >
+		<http:listener doc:name="Get/goodbye" doc:id="1bc68a52-cff1-46f9-9d52-5fc23780286e" path="/goodbye" allowedMethods="GET" config-ref="HTTP_Listener_config"/>
+		<set-payload value="#[upper('Goodbye') ++ ' ' ++ (attributes.queryParams.fullName default 'Maxine')]" doc:name="Goodbye" doc:id="00de19a5-83f7-46f5-bf26-94519328d0e8" />
+		<logger level="INFO" doc:name="Logger" doc:id="502711bd-78ae-4584-b58a-5295bb0d6f50" message="#[upper('GoodBye') ++ '  ' ++ attributes.queryParams.fullName as String]"/>
+	</flow>
+</mule>
